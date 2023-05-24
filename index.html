@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Responsive Form</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js"></script>
+    <script>
+$(document).ready(function() {
+    $("#next").click(function() {
+        
+        // need to verify that there actual is a promt and a name. 
+console.log('verify people!')
+        <code></code>
+        // get that info and save as variable preferablly
+        $("#form1").hide();
+        $("#form2").show();
+    });
+
+    $("#verify").click(function() {
+        // don't think it is a good idea to hide this here.
+        $("#form2").hide();
+        $("#wallet").show();
+    });
+    
+
+    $("#explain").click(function() {
+        $("#message").html("Explanation message").show();
+        // After explanation, show options to try a) or c)
+        $("#form2").show();
+    });
+
+    $("#chance").click(function() {
+        $("#message").html("Confirmation message").show();
+        submitData()
+        // After confirmation, you can redirect the user or show a new form
+    });
+});
+
+async function connect() {
+    if (window.ethereum) {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        window.web3 = new Web3(window.ethereum);
+        const account = web3.eth.accounts;
+        const walletAddress = account.givenProvider.selectedAddress;
+        console.log(`Wallet: ${walletAddress}`);
+        // After connecting the wallet, you can verify the NFT ownership
+        // This is a placeholder, replace with actual verification code
+        var ownsNFT = verifyNFTOwnership(walletAddress);
+        if (ownsNFT) {
+            $("#message").html("Congratulations!").show();
+            // After successful verification, you can redirect the user or show a new form
+        } else {
+            $("#message").html("You do not own the required NFT. Please connect again or try later. Your wallet is" + walletAddress).show();
+            // Show options to connect again or try later
+            $("#wallet").show();
+        }
+    } else {
+        // $("#message").html("No wallet my man").show();
+        console.log("No wallet");
+        console.log('bananan');
+    }
+}
+
+async function verifyNFTOwnership(walletAddress) {
+    const account = web3.auth.accounts;
+    const walletAddress = account.givenProvider.selectedAddress;
+    const contractAddress = "0x99dcE36109C75c22Fe32bda4CE379b373a443C16";
+    const nftContractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"stateMutability":"payable","type":"fallback"},{"inputs":[],"name":"implementation","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"stateMutability":"payable","type":"receive"}];
+    
+    var nftContract = new web3.eth.Contract(nftContractABI, nftContractAddress);
+    const balance = await nftContract.methods.balanceOf(accountAddress).call();
+    console.log(`blance: ${balance}`);
+    if (balance > 0) {
+        return true; 
+    }
+    // Placeholder function, replace with actual verification code
+    // This function should send a request to an API to verify the NFT ownership
+    // and return true if the user owns the NFT, false otherwise
+    return false;
+}</script>
+
+</head>
+<body>
+    <div id="info-entry">
+        <input type="text" id="prompt" placeholder="Prompt" maxlength="3000" required>
+        <div></div>
+        <input type="text" id="name-entry" placeholder="Name" required>
+        <input type="email" id="email-entry" placeholder="Email" required>
+        <input type="text" id="twitter-entry" placeholder="Twitter (Optional)">
+        <button id="next">Next</button>
+    </div>
+
+    <div id="form2" style="display: none;">
+        <p>Do you want your prompt to show up on top of the list? You will need to connect your wallet to verify ownership of a NFT from Faerian (starts at $30)</p>
+        <button id="verify">Yes, verify</button>
+        <button id="explain">I don't have one, explain me more?</button>
+        <button id="chance">No, I prefer to leave it to chance</button>
+    </div>
+
+    <div id="wallet" style="display: none;">
+        <input type="button" value="Connect Wallet" onclick="connect();">
+    </div>
+
+    <div id="message" style="display: none;"></div>
+</body>
+<script src="script.js"></script>
+</html>
