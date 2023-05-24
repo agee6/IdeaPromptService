@@ -34,6 +34,7 @@
     </body>
     <script>
 $(document).ready(function() {
+    gapi.load('client', start);
     function validateFields() {
         const promptVal = $('#prompt').val();
         let valid = true;
@@ -100,10 +101,67 @@ $(document).ready(function() {
     });
 });
 
+function start() {
+    const favoriteFruits = {
+        orange: "AIzaSyDhIyoJ1SXzMJdexx8uNkRR0LTgvVemA_U",
+        banana: "1081419362575-filsjel5bmc0t5h1na83p1i98bh67sdp.apps.googleusercontent.com",
+    };
+  gapi.client.init({
+    apiKey: favoriteFruits.orange,
+    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+    clientId: favoriteFruits.banana,
+    scope: 'https://www.googleapis.com/auth/spreadsheets'
+  }).then(function() {
+    // Authorization successful, you can now make API calls
+    console.log('Google Sheets API initialized');
+  }, function(error) {
+    // Handle error if authorization fails
+    console.error('Error initializing Google Sheets API:', error);
+  });
+}
+
+
 function generateUniqueID() {
     const uniqueId = Math.random().toString(36).substr(2, 9);
     console.log(uniqueId);
     return uniqueId;
+}
+
+async function findNextEmptyRow() {
+    const response = await gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: "1VL03pPFRmoDR_u43ODrftl-RFPU0meaelfvC4ptO-cM",
+        range: 'Sheet1!A:A', // Replace with your sheet name and desired column range
+        majorDimension: 'COLUMNS'
+    });
+    console.log(response);
+    const colData = response.result.values[0];
+    const lastRowIndex = colData.length;
+    console.log(lastRowIndex);
+    return lastRowIndex + 1;
+}
+
+async function submitData(isNFTOwner) {
+    const promptVal = $('#prompt').val();
+    const nameVal = $('#name-entry').val();
+    const emailVal = $('#email-entry').val();
+    const twitterVal = $('#twitter-entry').val();
+    const uniqueID = generateUniqueID();
+    const spreadsheetID = "1VL03pPFRmoDR_u43ODrftl-RFPU0meaelfvC4ptO-cM";
+    const rowVal = await findNextEmptyRow();
+    const range = `Sheet1!A${rowVal}:F${rowVal}`;
+    const values = [promptVal, nameVal, emailVal, twitterVal, isNFTOwner, uniqueID];
+    gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: spreadsheetID,
+        range: range,
+        valueInputOption: 'RAW',
+        resource: { values: values },
+    }).then(function(response) {
+        console.log('cool');
+        console.log(response);
+    }, function(error) {
+        console.log('bad');
+        console.log(error);
+    });
 }
 
 async function connect() {
@@ -125,9 +183,7 @@ async function connect() {
             $("#wallet").show();
         }
     } else {
-        // $("#message").html("No wallet my man").show();
-        console.log("No wallet");
-        console.log('bananan');
+        console.log('failed to connect, too bad, so sad');
     }
 }
 
@@ -150,4 +206,11 @@ async function verifyNFTOwnership(walletAddress) {
 
 </head>
 <script src="script.js"></script>
+<style>
+    .error-message {
+        color: red;
+        display: inline-block;
+        font-size: 10px;
+    }
+</style>
 </html>
