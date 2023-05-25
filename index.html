@@ -23,12 +23,12 @@
             <button id="verify">Yes, verify</button>
             <button id="explain">I don't have one, explain what this is</button>
             <button id="chance">No, I prefer to leave it to chance</button>
-            <button id="back-to-edit">Update Prompt</button>
         </div>
 
         <div id="wallet" style="display: none;">
             <input type="button" value="Connect Wallet" onclick="connect();">
         </div>
+        <button id="submit-button" style="display:none;">Submit Prompt</button>
 
         <div id="message" style="display: none;"></div>
     </body>
@@ -95,16 +95,19 @@ $(document).ready(function() {
     });
 
     $("#chance").click(function() {
-        $("#message").html("Confirmation message").show();
-        submitData()
+        submitData(false)
+        // showSuccess(generateUniqueID());
         // After confirmation, you can redirect the user or show a new form
+    });
+    $('#submit-button').click(function() {
+        submitData(true);
     });
 });
 
 function start() {
     const favoriteFruits = {
-        orange: "AIzaSyDhIyoJ1SXzMJdexx8uNkRR0LTgvVemA_U",
-        banana: "1081419362575-filsjel5bmc0t5h1na83p1i98bh67sdp.apps.googleusercontent.com",
+        orange: "orange",
+        banana: "banana",
     };
   gapi.client.init({
     apiKey: favoriteFruits.orange,
@@ -130,7 +133,7 @@ function generateUniqueID() {
 async function findNextEmptyRow() {
     const response = await gapi.client.sheets.spreadsheets.values.get({
         spreadsheetId: "1VL03pPFRmoDR_u43ODrftl-RFPU0meaelfvC4ptO-cM",
-        range: 'Sheet1!A:A', // Replace with your sheet name and desired column range
+        range: 'Sheet1!A:A',
         majorDimension: 'COLUMNS'
     });
     console.log(response);
@@ -158,10 +161,20 @@ async function submitData(isNFTOwner) {
     }).then(function(response) {
         console.log('cool');
         console.log(response);
+        $('#form2').hide();
+        $('#submit-button').hide();
+        $('#message').html('You have successfully submitted your prompt!');
     }, function(error) {
         console.log('bad');
         console.log(error);
+        $('#message').html('Failed!');
     });
+}
+
+function showSuccess(uniqeId) {
+    $('#form2').hide();
+    $('#submit-button').hide();
+    $('#message').html(`You have successfully submitted your prompt! Your unique prompt ID is: ${uniqeId}`).show();
 }
 
 async function connect() {
@@ -175,7 +188,9 @@ async function connect() {
         // This is a placeholder, replace with actual verification code
         var ownsNFT = verifyNFTOwnership(walletAddress);
         if (ownsNFT) {
-            $("#message").html("Congratulations!").show();
+            $("#message").html("Congratulations you own an NFT!").show();
+            $('#submit-button').show();
+
             // After successful verification, you can redirect the user or show a new form
         } else {
             $("#message").html("You do not own the required NFT. Please connect again or try later. Your wallet is" + walletAddress).show();
@@ -183,7 +198,9 @@ async function connect() {
             $("#wallet").show();
         }
     } else {
-        console.log('failed to connect, too bad, so sad');
+        $('#message').html('Failed to connect to wallet').show();
+        $('#form2').show();
+        $('#wallet').hide();
     }
 }
 
